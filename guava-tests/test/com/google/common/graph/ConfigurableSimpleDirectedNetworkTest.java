@@ -34,7 +34,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
 
   @Override
   public MutableNetwork<Integer, String> createGraph() {
-    return NetworkBuilder.directed().allowsSelfLoops(false).build();
+    return NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
   }
 
   @Override
@@ -58,7 +58,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       edges.add(E12);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.edges()).containsExactlyElementsIn(edges);
     }
   }
@@ -72,7 +72,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       incidentEdges.add(E12);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.incidentEdges(N1)).containsExactlyElementsIn(incidentEdges);
     }
   }
@@ -86,8 +86,21 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       adjacentNodes.add(N2);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.adjacentNodes(N1)).containsExactlyElementsIn(adjacentNodes);
+    }
+  }
+
+  @Override
+  public void adjacentEdges_checkReturnedSetMutability() {
+    addEdge(N1, N2, E12);
+    Set<String> adjacentEdges = network.adjacentEdges(E12);
+    try {
+      adjacentEdges.add(E23);
+      fail(ERROR_MODIFIABLE_COLLECTION);
+    } catch (UnsupportedOperationException e) {
+      addEdge(N2, N3, E23);
+      assertThat(network.adjacentEdges(E12)).containsExactlyElementsIn(adjacentEdges);
     }
   }
 
@@ -101,7 +114,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       edgesConnecting.add(E23);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.edgesConnecting(N1, N2)).containsExactlyElementsIn(edgesConnecting);
     }
   }
@@ -115,7 +128,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       inEdges.add(E12);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.inEdges(N2)).containsExactlyElementsIn(inEdges);
     }
   }
@@ -129,7 +142,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       outEdges.add(E12);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.outEdges(N1)).containsExactlyElementsIn(outEdges);
     }
   }
@@ -143,7 +156,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       predecessors.add(N1);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(network.predecessors(N2)).containsExactlyElementsIn(predecessors);
     }
   }
@@ -157,7 +170,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
       successors.add(N2);
       fail(ERROR_MODIFIABLE_COLLECTION);
     } catch (UnsupportedOperationException e) {
-      addEdge(E12, N1, N2);
+      addEdge(N1, N2, E12);
       assertThat(successors).containsExactlyElementsIn(network.successors(N1));
     }
   }
@@ -167,7 +180,7 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
   @Test
   public void addEdge_selfLoop() {
     try {
-      addEdge(E11, N1, N1);
+      addEdge(N1, N1, E11);
       fail(ERROR_ADDED_SELF_LOOP);
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage()).contains(ERROR_SELF_LOOP);
@@ -175,11 +188,10 @@ public class ConfigurableSimpleDirectedNetworkTest extends AbstractDirectedNetwo
   }
 
   /**
-   * This test checks an implementation dependent feature. It tests that
-   * the method {@code addEdge} will silently add the missing nodes to the graph,
-   * then add the edge connecting them. We are not using the proxy methods here
-   * as we want to test {@code addEdge} when the end-points are not elements
-   * of the graph.
+   * This test checks an implementation dependent feature. It tests that the method {@code addEdge}
+   * will silently add the missing nodes to the graph, then add the edge connecting them. We are not
+   * using the proxy methods here as we want to test {@code addEdge} when the end-points are not
+   * elements of the graph.
    */
   @Test
   public void addEdge_nodesNotInGraph() {

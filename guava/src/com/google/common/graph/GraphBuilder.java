@@ -16,8 +16,8 @@
 
 package com.google.common.graph;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.graph.Graphs.checkNonNegative;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
@@ -28,23 +28,25 @@ import com.google.common.base.Optional;
  * <p>A graph built by this class will have the following properties by default:
  *
  * <ul>
- * <li>allows self-loops
+ * <li>does not allow self-loops
  * <li>orders {@link Graph#nodes()} in the order in which the elements were added
  * </ul>
  *
  * <p>Example of use:
  *
- * <pre><code>
- * MutableGraph<String, Double> graph = GraphBuilder.undirected().build();
- * graph.putEdgeValue("Miami", "Denver", 5280.0);
- * </code></pre>
+ * <pre>{@code
+ * MutableGraph<String> graph = GraphBuilder.undirected().allowsSelfLoops(true).build();
+ * graph.putEdge("bread", "bread");
+ * graph.putEdge("chocolate", "peanut butter");
+ * graph.putEdge("peanut butter", "jelly");
+ * }</pre>
  *
  * @author James Sexton
  * @author Joshua O'Madadhain
  * @since 20.0
  */
 @Beta
-public final class GraphBuilder<N, V> extends AbstractGraphBuilder<N> {
+public final class GraphBuilder<N> extends AbstractGraphBuilder<N> {
 
   /** Creates a new instance with the specified edge directionality. */
   private GraphBuilder(boolean directed) {
@@ -52,13 +54,13 @@ public final class GraphBuilder<N, V> extends AbstractGraphBuilder<N> {
   }
 
   /** Returns a {@link GraphBuilder} for building directed graphs. */
-  public static GraphBuilder<Object, Object> directed() {
-    return new GraphBuilder<Object, Object>(true);
+  public static GraphBuilder<Object> directed() {
+    return new GraphBuilder<Object>(true);
   }
 
   /** Returns a {@link GraphBuilder} for building undirected graphs. */
-  public static GraphBuilder<Object, Object> undirected() {
-    return new GraphBuilder<Object, Object>(false);
+  public static GraphBuilder<Object> undirected() {
+    return new GraphBuilder<Object>(false);
   }
 
   /**
@@ -68,9 +70,8 @@ public final class GraphBuilder<N, V> extends AbstractGraphBuilder<N> {
    * such as {@link Graph#isDirected()}. Other properties, such as {@link #expectedNodeCount(int)},
    * are not set in the new builder.
    */
-  public static <N> GraphBuilder<N, Object> from(Graph<N, ?> graph) {
-    checkNotNull(graph);
-    return new GraphBuilder<N, Object>(graph.isDirected())
+  public static <N> GraphBuilder<N> from(Graph<N> graph) {
+    return new GraphBuilder<Object>(graph.isDirected())
         .allowsSelfLoops(graph.allowsSelfLoops())
         .nodeOrder(graph.nodeOrder());
   }
@@ -80,7 +81,7 @@ public final class GraphBuilder<N, V> extends AbstractGraphBuilder<N> {
    * Attempting to add a self-loop to a graph that does not allow them will throw an {@link
    * UnsupportedOperationException}.
    */
-  public GraphBuilder<N, V> allowsSelfLoops(boolean allowsSelfLoops) {
+  public GraphBuilder<N> allowsSelfLoops(boolean allowsSelfLoops) {
     this.allowsSelfLoops = allowsSelfLoops;
     return this;
   }
@@ -90,30 +91,25 @@ public final class GraphBuilder<N, V> extends AbstractGraphBuilder<N> {
    *
    * @throws IllegalArgumentException if {@code expectedNodeCount} is negative
    */
-  public GraphBuilder<N, V> expectedNodeCount(int expectedNodeCount) {
-    checkArgument(
-        expectedNodeCount >= 0,
-        "The expected number of nodes can't be negative: %s",
-        expectedNodeCount);
-    this.expectedNodeCount = Optional.of(expectedNodeCount);
+  public GraphBuilder<N> expectedNodeCount(int expectedNodeCount) {
+    this.expectedNodeCount = Optional.of(checkNonNegative(expectedNodeCount));
     return this;
   }
 
   /** Specifies the order of iteration for the elements of {@link Graph#nodes()}. */
-  public <N1 extends N> GraphBuilder<N1, V> nodeOrder(ElementOrder<N1> nodeOrder) {
-    checkNotNull(nodeOrder);
-    GraphBuilder<N1, V> newBuilder = cast();
-    newBuilder.nodeOrder = nodeOrder;
+  public <N1 extends N> GraphBuilder<N1> nodeOrder(ElementOrder<N1> nodeOrder) {
+    GraphBuilder<N1> newBuilder = cast();
+    newBuilder.nodeOrder = checkNotNull(nodeOrder);
     return newBuilder;
   }
 
   /** Returns an empty {@link MutableGraph} with the properties of this {@link GraphBuilder}. */
-  public <N1 extends N, V1 extends V> MutableGraph<N1, V1> build() {
-    return new ConfigurableMutableGraph<N1, V1>(this);
+  public <N1 extends N> MutableGraph<N1> build() {
+    return new ConfigurableMutableGraph<N1>(this);
   }
 
   @SuppressWarnings("unchecked")
-  private <N1 extends N, V1 extends V> GraphBuilder<N1, V1> cast() {
-    return (GraphBuilder<N1, V1>) this;
+  private <N1 extends N> GraphBuilder<N1> cast() {
+    return (GraphBuilder<N1>) this;
   }
 }

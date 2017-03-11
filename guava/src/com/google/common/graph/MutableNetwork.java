@@ -18,10 +18,11 @@ package com.google.common.graph;
 
 import com.google.common.annotations.Beta;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CompatibleWith;
 
 /**
- * A subtype of {@link Network} which permits mutations.
- * Users should generally use the {@link Network} interface where possible.
+ * A subinterface of {@link Network} which adds mutation methods. When mutation is not required,
+ * users should prefer the {@link Network} interface.
  *
  * @author James Sexton
  * @author Joshua O'Madadhain
@@ -37,45 +38,46 @@ public interface MutableNetwork<N, E> extends Network<N, E> {
    *
    * <p><b>Nodes must be unique</b>, just as {@code Map} keys must be. They must also be non-null.
    *
-   * @return {@code true} iff the graph was modified as a result of this call
+   * @return {@code true} if the network was modified as a result of this call
    */
   @CanIgnoreReturnValue
   boolean addNode(N node);
 
   /**
-   * Adds {@code edge} connecting {@code nodeA} to {@code nodeB}.
+   * Adds {@code edge} connecting {@code nodeU} to {@code nodeV}. In an undirected network, the edge
+   * will also connect {@code nodeV} to {@code nodeU}.
    *
    * <p><b>Edges must be unique</b>, just as {@code Map} keys must be. They must also be non-null.
    *
-   * <p>Behavior if {@code nodeA} and {@code nodeB} are not already present in this graph is
+   * <p>Behavior if {@code nodeU} and {@code nodeV} are not already present in this network is
    * implementation-dependent. Suggested behaviors include (a) silently {@link #addNode(Object)
-   * adding} {@code nodeA} and {@code nodeB} to the graph (this is the behavior of the default
+   * adding} {@code nodeU} and {@code nodeV} to the network (this is the behavior of the default
    * implementations) or (b) throwing {@code IllegalArgumentException}.
    *
-   * <p>If {@code edge} already connects {@code nodeA} to {@code nodeB} (in the specified order if
-   * this graph {@link #isDirected()}, else in any order), then this method will have no effect.
+   * <p>If {@code edge} already connects {@code nodeU} to {@code nodeV} (in the specified order if
+   * this network {@link #isDirected()}, else in any order), then this method will have no effect.
    *
-   * @return {@code true} iff the graph was modified as a result of this call
-   * @throws IllegalArgumentException if {@code edge} already exists and does not connect
-   *     {@code nodeA} to {@code nodeB}, or if the introduction of the edge would violate
-   *     {@link #allowsParallelEdges()} or {@link #allowsSelfLoops()}
+   * @return {@code true} if the network was modified as a result of this call
+   * @throws IllegalArgumentException if {@code edge} already exists and does not connect {@code
+   *     nodeU} to {@code nodeV}, or if the introduction of the edge would violate {@link
+   *     #allowsParallelEdges()} or {@link #allowsSelfLoops()}
    */
   @CanIgnoreReturnValue
-  boolean addEdge(N nodeA, N nodeB, E edge);
+  boolean addEdge(N nodeU, N nodeV, E edge);
 
   /**
    * Removes {@code node} if it is present; all edges incident to {@code node} will also be removed.
    *
-   * @return {@code true} iff the graph was modified as a result of this call
+   * @return {@code true} if the network was modified as a result of this call
    */
   @CanIgnoreReturnValue
-  boolean removeNode(Object node);
+  boolean removeNode(@CompatibleWith("N") Object node);
 
   /**
-   * Removes {@code edge} from this graph, if it is present.
+   * Removes {@code edge} from this network, if it is present.
    *
-   * @return {@code true} iff the graph was modified as a result of this call
+   * @return {@code true} if the network was modified as a result of this call
    */
   @CanIgnoreReturnValue
-  boolean removeEdge(Object edge);
+  boolean removeEdge(@CompatibleWith("E") Object edge);
 }

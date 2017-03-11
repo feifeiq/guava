@@ -19,9 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.collect.ImmutableMap.IteratorBasedImmutableMap;
 import com.google.j2objc.annotations.WeakOuter;
-
 import java.util.Map;
-
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,7 +36,9 @@ final class DenseImmutableTable<R, C, V> extends RegularImmutableTable<R, C, V> 
   private final int[] rowCounts;
   private final int[] columnCounts;
   private final V[][] values;
+  // For each cell in iteration order, the index of that cell's row key in the row key list.
   private final int[] cellRowIndices;
+  // For each cell in iteration order, the index of that cell's column key in the column key list.
   private final int[] cellColumnIndices;
 
   DenseImmutableTable(

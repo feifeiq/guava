@@ -18,24 +18,54 @@ package com.google.common.graph;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
-import java.util.Collection;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import java.util.Set;
 
-/**
- * Utility methods used in various common.graph tests.
- */
-class TestUtil {
+/** Utility methods used in various common.graph tests. */
+final class TestUtil {
 
   private TestUtil() {}
 
+  static void assertStronglyEquivalent(Graph<?> graphA, Graph<?> graphB) {
+    // Properties not covered by equals()
+    assertThat(graphA.allowsSelfLoops()).isEqualTo(graphB.allowsSelfLoops());
+    assertThat(graphA.nodeOrder()).isEqualTo(graphB.nodeOrder());
+
+    assertThat(graphA).isEqualTo(graphB);
+  }
+
+  static void assertStronglyEquivalent(ValueGraph<?, ?> graphA, ValueGraph<?, ?> graphB) {
+    // Properties not covered by equals()
+    assertThat(graphA.allowsSelfLoops()).isEqualTo(graphB.allowsSelfLoops());
+    assertThat(graphA.nodeOrder()).isEqualTo(graphB.nodeOrder());
+
+    assertThat(graphA).isEqualTo(graphB);
+  }
+
+  static void assertStronglyEquivalent(Network<?, ?> networkA, Network<?, ?> networkB) {
+    // Properties not covered by equals()
+    assertThat(networkA.allowsParallelEdges()).isEqualTo(networkB.allowsParallelEdges());
+    assertThat(networkA.allowsSelfLoops()).isEqualTo(networkB.allowsSelfLoops());
+    assertThat(networkA.nodeOrder()).isEqualTo(networkB.nodeOrder());
+    assertThat(networkA.edgeOrder()).isEqualTo(networkB.edgeOrder());
+
+    assertThat(networkA).isEqualTo(networkB);
+  }
+
   /**
-   * In some cases our graph implementations return custom collections that define their own size()
-   * and contains(). Verify that those methods are consistent with the elements of the iterator.
+   * In some cases our graph implementations return custom sets that define their own size() and
+   * contains(). Verify that these sets are consistent with the elements of their iterator.
    */
-  static void sanityCheckCollection(Collection<?> collection) {
-    assertThat(collection).hasSize(Iterators.size(collection.iterator()));
-    for (Object element : collection) {
-      assertThat(collection).contains(element);
+  @CanIgnoreReturnValue
+  static <T> Set<T> sanityCheckSet(Set<T> set) {
+    assertThat(set).hasSize(Iterators.size(set.iterator()));
+    for (Object element : set) {
+      assertThat(set).contains(element);
     }
+    assertThat(set).doesNotContain(new Object());
+    assertThat(set).isEqualTo(ImmutableSet.copyOf(set));
+    return set;
   }
 }

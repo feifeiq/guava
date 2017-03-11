@@ -24,7 +24,6 @@ import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.Weak;
 import com.google.j2objc.annotations.WeakOuter;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,7 +45,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
-
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -66,6 +64,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 // TODO(kak/cpovirk): Consider removing @CanIgnoreReturnValue from this class.
 @GwtIncompatible
+@SuppressWarnings("GuardedBy") // TODO(b/35466881): Fix or suppress.
 class MapMakerInternalMap<
         K,
         V,
@@ -99,8 +98,8 @@ class MapMakerInternalMap<
 
   /**
    * The maximum capacity, used if a higher value is implicitly specified by either of the
-   * constructors with arguments. MUST be a power of two <= 1<<30 to ensure that entries are
-   * indexable using ints.
+   * constructors with arguments. MUST be a power of two no greater than {@code 1<<30} to ensure
+   * that entries are indexable using ints.
    */
   static final int MAXIMUM_CAPACITY = Ints.MAX_POWER_OF_TWO;
 
@@ -788,7 +787,7 @@ class MapMakerInternalMap<
     /** Returns the entry which contains this {@link WeakValueReference}. */
     E getEntry();
 
-    /** Unsets the referenced value. Subsequent calls to {@link get} will return {@code null}. */
+    /** Unsets the referenced value. Subsequent calls to {@link #get} will return {@code null}. */
     void clear();
 
     /**
@@ -858,7 +857,7 @@ class MapMakerInternalMap<
   /** Concrete implementation of {@link WeakValueReference}. */
   static final class WeakValueReferenceImpl<K, V, E extends InternalEntry<K, V, E>>
       extends WeakReference<V> implements WeakValueReference<K, V, E> {
-    final E entry;
+    @Weak final E entry;
 
     WeakValueReferenceImpl(ReferenceQueue<V> queue, V referent, E entry) {
       super(referent, queue);
@@ -1121,7 +1120,7 @@ class MapMakerInternalMap<
     }
 
     /**
-     * Unsafely sets the weak value reference inside the given {@code entry} to be the given {@link
+     * Unsafely sets the weak value reference inside the given {@code entry} to be the given {@code
      * valueReference}
      */
     void setWeakValueReferenceForTesting(
@@ -1839,11 +1838,6 @@ class MapMakerInternalMap<
   /** Concrete implementation of {@link Segment} for strong keys and strong values. */
   static final class StrongKeyStrongValueSegment<K, V>
       extends Segment<K, V, StrongKeyStrongValueEntry<K, V>, StrongKeyStrongValueSegment<K, V>> {
-    /**
-     * @param map
-     * @param initialCapacity
-     * @param maxSegmentSize
-     */
     StrongKeyStrongValueSegment(
         MapMakerInternalMap<
                 K, V, StrongKeyStrongValueEntry<K, V>, StrongKeyStrongValueSegment<K, V>>
@@ -1870,11 +1864,6 @@ class MapMakerInternalMap<
       extends Segment<K, V, StrongKeyWeakValueEntry<K, V>, StrongKeyWeakValueSegment<K, V>> {
     private final ReferenceQueue<V> queueForValues = new ReferenceQueue<V>();
 
-    /**
-     * @param map
-     * @param initialCapacity
-     * @param maxSegmentSize
-     */
     StrongKeyWeakValueSegment(
         MapMakerInternalMap<K, V, StrongKeyWeakValueEntry<K, V>, StrongKeyWeakValueSegment<K, V>>
             map,
@@ -1941,11 +1930,6 @@ class MapMakerInternalMap<
       extends Segment<K, V, WeakKeyStrongValueEntry<K, V>, WeakKeyStrongValueSegment<K, V>> {
     private final ReferenceQueue<K> queueForKeys = new ReferenceQueue<K>();
 
-    /**
-     * @param map
-     * @param initialCapacity
-     * @param maxSegmentSize
-     */
     WeakKeyStrongValueSegment(
         MapMakerInternalMap<K, V, WeakKeyStrongValueEntry<K, V>, WeakKeyStrongValueSegment<K, V>>
             map,
@@ -1987,11 +1971,6 @@ class MapMakerInternalMap<
     private final ReferenceQueue<K> queueForKeys = new ReferenceQueue<K>();
     private final ReferenceQueue<V> queueForValues = new ReferenceQueue<V>();
 
-    /**
-     * @param map
-     * @param initialCapacity
-     * @param maxSegmentSize
-     */
     WeakKeyWeakValueSegment(
         MapMakerInternalMap<K, V, WeakKeyWeakValueEntry<K, V>, WeakKeyWeakValueSegment<K, V>> map,
         int initialCapacity,

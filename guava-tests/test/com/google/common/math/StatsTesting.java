@@ -29,7 +29,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
-
 import java.math.BigInteger;
 import java.util.List;
 
@@ -247,7 +246,7 @@ class StatsTesting {
     LONG_MANY_VALUES_STATS_SNAPSHOT = accumulator.snapshot();
   }
 
-  static final List<Stats> ALL_STATS =
+  static final ImmutableList<Stats> ALL_STATS =
       ImmutableList.of(
           EMPTY_STATS_VARARGS,
           EMPTY_STATS_ITERABLE,
@@ -314,7 +313,7 @@ class StatsTesting {
     CONSTANT_VALUES_PAIRED_STATS = accumulator.snapshot();
   }
 
-  static final List<PairedStats> ALL_PAIRED_STATS =
+  static final ImmutableList<PairedStats> ALL_PAIRED_STATS =
       ImmutableList.of(
           EMPTY_PAIRED_STATS,
           ONE_VALUE_PAIRED_STATS,

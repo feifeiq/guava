@@ -22,9 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link ImmutableNetwork}.
- */
+/** Tests for {@link ImmutableNetwork}. */
 @RunWith(JUnit4.class)
 public class ImmutableNetworkTest {
 
@@ -32,8 +30,9 @@ public class ImmutableNetworkTest {
   public void immutableNetwork() {
     MutableNetwork<String, Integer> mutableNetwork = NetworkBuilder.directed().build();
     mutableNetwork.addNode("A");
-    Network<String, Integer> immutableNetwork = ImmutableNetwork.copyOf(mutableNetwork);
+    ImmutableNetwork<String, Integer> immutableNetwork = ImmutableNetwork.copyOf(mutableNetwork);
 
+    assertThat(immutableNetwork.asGraph()).isInstanceOf(ImmutableGraph.class);
     assertThat(immutableNetwork).isNotInstanceOf(MutableNetwork.class);
     assertThat(immutableNetwork).isEqualTo(mutableNetwork);
 
@@ -43,8 +42,8 @@ public class ImmutableNetworkTest {
 
   @Test
   public void copyOfImmutableNetwork_optimized() {
-    Network<String, String> network1 = ImmutableNetwork.copyOf(
-        NetworkBuilder.directed().<String, String>build());
+    Network<String, String> network1 =
+        ImmutableNetwork.copyOf(NetworkBuilder.directed().<String, String>build());
     Network<String, String> network2 = ImmutableNetwork.copyOf(network1);
 
     assertThat(network2).isSameAs(network1);
@@ -52,7 +51,8 @@ public class ImmutableNetworkTest {
 
   @Test
   public void edgesConnecting_directed() {
-    MutableNetwork<String, String> mutableNetwork = NetworkBuilder.directed().build();
+    MutableNetwork<String, String> mutableNetwork =
+        NetworkBuilder.directed().allowsSelfLoops(true).build();
     mutableNetwork.addEdge("A", "A", "AA");
     mutableNetwork.addEdge("A", "B", "AB");
     Network<String, String> network = ImmutableNetwork.copyOf(mutableNetwork);
@@ -64,7 +64,8 @@ public class ImmutableNetworkTest {
 
   @Test
   public void edgesConnecting_undirected() {
-    MutableNetwork<String, String> mutableNetwork = NetworkBuilder.undirected().build();
+    MutableNetwork<String, String> mutableNetwork =
+        NetworkBuilder.undirected().allowsSelfLoops(true).build();
     mutableNetwork.addEdge("A", "A", "AA");
     mutableNetwork.addEdge("A", "B", "AB");
     Network<String, String> network = ImmutableNetwork.copyOf(mutableNetwork);

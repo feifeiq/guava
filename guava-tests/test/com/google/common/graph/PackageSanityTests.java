@@ -30,24 +30,24 @@ import junit.framework.AssertionFailedError;
 public class PackageSanityTests extends AbstractPackageSanityTests {
 
   private static final AbstractGraphBuilder<?> GRAPH_BUILDER_A =
-      BasicGraphBuilder.directed().expectedNodeCount(10);
+      GraphBuilder.directed().expectedNodeCount(10);
   private static final AbstractGraphBuilder<?> GRAPH_BUILDER_B =
-      GraphBuilder.directed().allowsSelfLoops(false).expectedNodeCount(16);
+      ValueGraphBuilder.directed().allowsSelfLoops(true).expectedNodeCount(16);
 
-  private static final ImmutableBasicGraph<String> IMMUTABLE_GRAPH_A = graphWithNode("A");
-  private static final ImmutableBasicGraph<String> IMMUTABLE_GRAPH_B = graphWithNode("B");
+  private static final ImmutableGraph<String> IMMUTABLE_GRAPH_A = graphWithNode("A");
+  private static final ImmutableGraph<String> IMMUTABLE_GRAPH_B = graphWithNode("B");
 
   private static final NetworkBuilder<?, ?> NETWORK_BUILDER_A =
       NetworkBuilder.directed().allowsParallelEdges(true).expectedNodeCount(10);
   private static final NetworkBuilder<?, ?> NETWORK_BUILDER_B =
-      NetworkBuilder.directed().allowsSelfLoops(false).expectedNodeCount(16);
+      NetworkBuilder.directed().allowsSelfLoops(true).expectedNodeCount(16);
 
   private static final ImmutableNetwork<String, String> IMMUTABLE_NETWORK_A = networkWithNode("A");
   private static final ImmutableNetwork<String, String> IMMUTABLE_NETWORK_B = networkWithNode("B");
 
   public PackageSanityTests() {
     setDistinctValues(AbstractGraphBuilder.class, GRAPH_BUILDER_A, GRAPH_BUILDER_B);
-    setDistinctValues(BasicGraph.class, IMMUTABLE_GRAPH_A, IMMUTABLE_GRAPH_B);
+    setDistinctValues(Graph.class, IMMUTABLE_GRAPH_A, IMMUTABLE_GRAPH_B);
     setDistinctValues(NetworkBuilder.class, NETWORK_BUILDER_A, NETWORK_BUILDER_B);
     setDistinctValues(Network.class, IMMUTABLE_NETWORK_A, IMMUTABLE_NETWORK_B);
   }
@@ -58,14 +58,15 @@ public class PackageSanityTests extends AbstractPackageSanityTests {
       super.testNulls();
     } catch (AssertionFailedError e) {
       assertWithMessage("Method did not throw null pointer OR element not in graph exception.")
-          .that(e.getCause().getMessage()).contains(AbstractNetworkTest.ERROR_ELEMENT_NOT_IN_GRAPH);
+          .that(e.getCause().getMessage())
+          .contains(AbstractNetworkTest.ERROR_ELEMENT_NOT_IN_GRAPH);
     }
   }
 
-  private static <N> ImmutableBasicGraph<N> graphWithNode(N node) {
-    MutableBasicGraph<N> graph = BasicGraphBuilder.directed().build();
+  private static <N> ImmutableGraph<N> graphWithNode(N node) {
+    MutableGraph<N> graph = GraphBuilder.directed().build();
     graph.addNode(node);
-    return ImmutableBasicGraph.copyOf(graph);
+    return ImmutableGraph.copyOf(graph);
   }
 
   private static <N> ImmutableNetwork<N, N> networkWithNode(N node) {
